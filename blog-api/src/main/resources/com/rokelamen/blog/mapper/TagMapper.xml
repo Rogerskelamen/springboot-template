@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rokelamen.blog.mapper.TagMapper">
+
+    <!-- List<Tag> findTagsByArticleId(Long articleId);-->
+    <select id="findTagsByArticleId" parameterType="long" resultType="com.rokelamen.blog.pojo.Tag">
+        select ms_tag.id as id, avatar, tag_name as tagName
+        from ms_tag inner join ms_article_tag mat on ms_tag.id = mat.tag_id and mat.article_id = #{articleId};
+    </select>
+</mapper>
