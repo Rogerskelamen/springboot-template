@@ -9,4 +9,11 @@
         select ms_tag.id as id, avatar, tag_name as tagName
         from ms_tag inner join ms_article_tag mat on ms_tag.id = mat.tag_id and mat.article_id = #{articleId};
     </select>
+
+    <!--void findHotTagIds(int limit);-->
+    <select id="findHotTagIds" parameterType="integer" resultType="Long">
+        select tag_id
+        from ms_article_tag group by tag_id
+        order by count(*) desc limit #{limit};
+    </select>
 </mapper>

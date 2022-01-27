@@ -3,12 +3,16 @@ package com.rokelamen.blog.service.impl;
 import com.rokelamen.blog.mapper.TagMapper;
 import com.rokelamen.blog.pojo.Tag;
 import com.rokelamen.blog.service.TagService;
+import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.TagVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -36,5 +40,26 @@ public class TagServiceImpl implements TagService {
         // 1. Mybatis-plus无法进行多表查询
         List<Tag> tags = tagMapper.findTagsByArticleId(articleId);
         return copyList(tags);
+    }
+
+    @Override
+    public Result hots(int limit) {
+        /**
+         * 1. 标签所拥有的文章数量最多
+         * 2. 查询 根据tag_id 分组 计数，从大到小排列
+         */
+        List<Long> tagIds =  tagMapper.findHotTagIds(limit);
+        if (CollectionUtils.isEmpty(tagIds)) {
+            return Result.success(Collections.emptyList());
+        }else {
+            // 这里的查询次数是limit次，如果需要sql优化的话最好使用一次查询
+            // 也就是自己写sql语句，不用mybatis-plus
+            List<Tag> tags = new ArrayList<>();
+            for (long tagId :
+                    tagIds) {
+                tags.add(tagMapper.selectById(tagId));
+            }
+            return Result.success(tags);
+        }
     }
 }
