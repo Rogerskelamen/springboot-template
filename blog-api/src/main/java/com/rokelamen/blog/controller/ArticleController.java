@@ -4,10 +4,7 @@ import com.rokelamen.blog.service.ArticleService;
 import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 // 使用json格式进行交互
 @RestController
@@ -24,5 +21,32 @@ public class ArticleController {
     @PostMapping
     public Result listArticle(@RequestBody PageParams pageParams) {
         return articleService.listArticle(pageParams);
+    }
+
+    /**
+     * 首页 最热文章
+     * @return
+     */
+    @PostMapping("/hot/{limit}")
+    public Result hotArticle(@PathVariable int limit) {
+        return articleService.hotArticle(limit);
+    }
+
+    /**
+     * 首页 最新文章
+     * @return
+     */
+    @PostMapping("/new/{limit}")
+    public Result newArticles(@PathVariable int limit) {
+        return articleService.newArticles(limit);
+    }
+
+    /**
+     * 首页 最新文章
+     * @return
+     */
+    @PostMapping("/listArchives")
+    public Result listArchives() {
+        return articleService.listArchives();
     }
 }

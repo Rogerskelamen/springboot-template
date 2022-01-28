@@ -52,7 +52,7 @@ public class TagServiceImpl implements TagService {
         if (CollectionUtils.isEmpty(tagIds)) {
             return Result.success(Collections.emptyList());
         }else {
-            // 这里的查询次数是limit次，如果需要sql优化的话最好使用一次查询
+            // 这里的查询次数是limit次（调用查询语句的次数就是limit次），如果需要sql优化的话最好使用一次查询
             // 也就是自己写sql语句，不用mybatis-plus
             List<Tag> tags = new ArrayList<>();
             for (long tagId :

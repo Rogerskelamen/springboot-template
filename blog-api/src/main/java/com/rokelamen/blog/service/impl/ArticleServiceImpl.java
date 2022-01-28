@@ -2,6 +2,7 @@ package com.rokelamen.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rokelamen.blog.dos.Archives;
 import com.rokelamen.blog.mapper.ArticleMapper;
 import com.rokelamen.blog.pojo.Article;
 import com.rokelamen.blog.service.ArticleService;
@@ -44,6 +45,34 @@ public class ArticleServiceImpl implements ArticleService {
         // 能直接返回吗？当然不能,需要返回一个VO对象
         List<ArticleVo> articleVoList = copyList(records, true, true);
         return Result.success(articleVoList);
+    }
+
+    @Override
+    public Result hotArticle(int limit) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Article::getViewCounts);
+        queryWrapper.select(Article::getId, Article::getTitle);
+        queryWrapper.last("limit " + limit);
+        // select id, title from article order by view_counts desc limit 5
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+        return Result.success(copyList(articles, false, false));
+    }
+
+    @Override
+    public Result newArticles(int limit) {
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Article::getCreateDate);
+        queryWrapper.select(Article::getId, Article::getTitle);
+        queryWrapper.last("limit " + limit);
+        // select id, title from article order by created_date desc limit 5
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+        return Result.success(copyList(articles, false, false));
+    }
+
+    @Override
+    public Result listArchives() {
+        List<Archives> archives = articleMapper.listArchives();
+        return Result.success(archives);
     }
 
     // 将集合类型的article转化为集合类型的articleVo
