@@ -9,4 +9,6 @@ public interface SysUserService {
      * @return  用户信息
      */
     SysUser findUserById(Long id);
+
+    SysUser findUser(String account, String password);
 }
