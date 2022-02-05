@@ -52,9 +52,15 @@ public class LoginServiceImpl implements LoginService {
 
         String token = JWTUtils.createToken(user.getId());
 
-        // 在redis缓存中存储token信息
+        // 在redis缓存中存储token信息，value值是整个user信息
         redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);
 
         return Result.success(token);
+    }
+
+    @Override
+    public Result logout(String token) {
+        redisTemplate.delete("TOKEN_" + token);
+        return Result.success(null);
     }
 }

@@ -4,6 +4,7 @@ public enum ErrorCode {
 
     PARAMS_ERROR(10001, "参数有误"),
     ACCOUNT_ERROR(10002, "用户名或密码不存在"),
+    TOKEN_ERROR(10003, "token不合法"),
     NO_PERMISSION(70001, "无访问权限"),
     SESSION_TIMEOUT(90001, "会话超时"),
     NO_LOGIN(90002, "未登录");
