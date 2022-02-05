@@ -19,4 +19,17 @@ public interface SysUserService {
      * @return  用户信息
      */
     Result findUserByToken(String token);
+
+    /**
+     * 根据账户查找用户
+     * @param account
+     * @return
+     */
+    SysUser findUserByAccount(String account);
+
+    /**
+     * 保存用户
+     * @param user
+     */
+    void save(SysUser user);
 }

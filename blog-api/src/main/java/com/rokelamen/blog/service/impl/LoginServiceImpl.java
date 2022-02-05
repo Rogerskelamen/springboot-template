@@ -13,10 +13,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Transactional
 public class LoginServiceImpl implements LoginService {
     @Autowired
     private SysUserService sysUserService;
@@ -62,5 +64,54 @@ public class LoginServiceImpl implements LoginService {
     public Result logout(String token) {
         redisTemplate.delete("TOKEN_" + token);
         return Result.success(null);
+    }
+
+    @Override
+    public Result register(LoginParams loginParams) {
+        /**
+         * 1. 判断参数 是否合法
+         * 2. 判断账户是否存在，存在返回账户已经被注册
+         * 3. 如果不存在，注册用户
+         * 4. 生成token
+         * 5. 存入redis 并返回
+         * 6. 注意加上事务，一旦中间任何过程出现问题，注册的用户需要回滚
+         */
+
+        String account = loginParams.getAccount();
+        String nickname = loginParams.getNickname();
+        String password = loginParams.getPassword();
+        if (StringUtils.isBlank(account)
+                || StringUtils.isBlank(password)
+                || StringUtils.isBlank(nickname))
+        {
+            return Result.fail(ErrorCode.PARAMS_ERROR.getCode(), ErrorCode.PARAMS_ERROR.getMsg());
+        }
+
+        SysUser sysUser = sysUserService.findUserByAccount(account);
+
+        if (sysUser != null) {
+            return Result.fail(ErrorCode.ACCOUNT_EXIT.getCode(), ErrorCode.ACCOUNT_EXIT.getMsg());
+        }
+
+        SysUser user = new SysUser();
+        user.setNickname(nickname);
+        user.setAccount(account);
+        user.setPassword(DigestUtils.md5Hex(password + slat));
+        user.setCreateDate(System.currentTimeMillis());
+        user.setLastLogin(System.currentTimeMillis());
+        user.setAvatar("@/assets/logo.png");
+        user.setAdmin(true);
+        user.setDeleted(false);
+        user.setSalt("");
+        user.setStatus("");
+        user.setEmail("");
+        sysUserService.save(user);
+
+        String token = JWTUtils.createToken(user.getId());
+
+        // 在redis缓存中存储token信息，value值是整个user信息
+        redisTemplate.opsForValue().set("TOKEN_" + token, JSON.toJSONString(user), 1, TimeUnit.DAYS);
+
+        return Result.success(token);
     }
 }
