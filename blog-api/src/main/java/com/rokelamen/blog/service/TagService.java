@@ -21,4 +21,6 @@ public interface TagService {
      * @return  TagVo转的返回类
      */
     Result hots(int limit);
+
+    Result findAll();
 }

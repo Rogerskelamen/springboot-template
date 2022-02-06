@@ -5,12 +5,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rokelamen.blog.dos.Archives;
 import com.rokelamen.blog.mapper.ArticleBodyMapper;
 import com.rokelamen.blog.mapper.ArticleMapper;
+import com.rokelamen.blog.mapper.ArticleTagMapper;
 import com.rokelamen.blog.pojo.Article;
 import com.rokelamen.blog.pojo.ArticleBody;
+import com.rokelamen.blog.pojo.ArticleTag;
+import com.rokelamen.blog.pojo.SysUser;
 import com.rokelamen.blog.service.*;
+import com.rokelamen.blog.utils.UserThreadLocal;
 import com.rokelamen.blog.vo.ArticleBodyVo;
 import com.rokelamen.blog.vo.ArticleVo;
 import com.rokelamen.blog.vo.Result;
+import com.rokelamen.blog.vo.TagVo;
+import com.rokelamen.blog.vo.params.ArticleBodyParams;
+import com.rokelamen.blog.vo.params.ArticleParams;
 import com.rokelamen.blog.vo.params.PageParams;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -18,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -33,6 +42,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private ArticleTagMapper articleTagMapper;
 
     @Override
     public Result listArticle(PageParams pageParams) {
@@ -99,6 +111,55 @@ public class ArticleServiceImpl implements ArticleService {
         // 线程池 可以把更新操作扔到线程池中去执行，和主线程就不相关了
         threadService.updateArticleViewCount(article);
         return Result.success(articleVo);
+    }
+
+    @Override
+    public Result publish(ArticleParams articleParams) {
+        // 此接口要加入到登录拦截当中去
+        SysUser sysUser = UserThreadLocal.get();
+        /**
+         * 1. 首先发布文章 目的是构建Article对象
+         * 2. 作者id 当前的登录用户
+         * 3. 标签 要将标签加入到 关联列表中
+         * 4. body内容存储 article bodyId
+         */
+        Article article = new Article();
+        article.setAuthorId(sysUser.getId());
+        article.setWeight(Article.Article_Common);
+        article.setViewCounts(0);
+        article.setTitle(articleParams.getTitle());
+        article.setSummary(articleParams.getSummary());
+        article.setCommentCounts(0);
+        article.setCreateDate(System.currentTimeMillis());
+        article.setCategoryId(articleParams.getCategory().getId());
+        // 插入之后会生成一个文章id
+        articleMapper.insert(article);
+        // tag
+        List<TagVo> tags = articleParams.getTags();
+        if (tags != null) {
+            for (TagVo tag : tags) {
+                Long articleId = article.getId();
+                ArticleTag articleTag = new ArticleTag();
+                articleTag.setTagId(tag.getId());
+                articleTag.setArticleId(articleId);
+                articleTagMapper.insert(articleTag);
+            }
+        }
+        // body
+        ArticleBody articleBody = new ArticleBody();
+        articleBody.setArticleId(article.getId());
+        articleBody.setContent(articleParams.getBody().getContent());
+        articleBody.setContentHtml(articleParams.getBody().getContentHtml());
+        articleBodyMapper.insert(articleBody);
+
+        // 插入之后产生articleBodyId
+        article.setBodyId(articleBody.getId());
+        articleMapper.updateById(article);
+
+        // 返回的数据是一个article的id（使用map解决精度问题）
+        Map<String, String> map = new HashMap<>();
+        map.put("id", article.getId().toString());
+        return Result.success(map);
     }
 
     // 将集合类型的article转化为集合类型的articleVo

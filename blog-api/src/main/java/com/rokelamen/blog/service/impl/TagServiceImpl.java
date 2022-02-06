@@ -1,8 +1,11 @@
 package com.rokelamen.blog.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rokelamen.blog.mapper.TagMapper;
+import com.rokelamen.blog.pojo.Category;
 import com.rokelamen.blog.pojo.Tag;
 import com.rokelamen.blog.service.TagService;
+import com.rokelamen.blog.vo.CategoryVo;
 import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.TagVo;
 import org.springframework.beans.BeanUtils;
@@ -61,5 +64,12 @@ public class TagServiceImpl implements TagService {
             }
             return Result.success(tags);
         }
+    }
+
+    @Override
+    public Result findAll() {
+        List<Tag> tagList = tagMapper.selectList(new LambdaQueryWrapper<>());
+
+        return Result.success(copyList(tagList));
     }
 }

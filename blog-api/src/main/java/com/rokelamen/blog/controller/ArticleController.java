@@ -2,6 +2,7 @@ package com.rokelamen.blog.controller;
 
 import com.rokelamen.blog.service.ArticleService;
 import com.rokelamen.blog.vo.Result;
+import com.rokelamen.blog.vo.params.ArticleParams;
 import com.rokelamen.blog.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -53,5 +54,10 @@ public class ArticleController {
     @GetMapping("/view/{id}")
     public Result findArticleById(@PathVariable("id") Long articleId) {
         return articleService.findArticleById(articleId);
+    }
+
+    @PostMapping("/publish")
+    public Result publish(@RequestBody ArticleParams articleParams) {
+        return articleService.publish(articleParams);
     }
 }

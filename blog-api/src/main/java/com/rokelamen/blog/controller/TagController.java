@@ -19,4 +19,9 @@ public class TagController {
     public Result host(@PathVariable("limit") int limit) {
         return tagService.hots(limit);
     }
+
+    @GetMapping
+    public Result getTags() {
+        return tagService.findAll();
+    }
 }

@@ -1,6 +1,7 @@
 package com.rokelamen.blog.service;
 
 import com.rokelamen.blog.vo.Result;
+import com.rokelamen.blog.vo.params.ArticleParams;
 import com.rokelamen.blog.vo.params.PageParams;
 
 public interface ArticleService {
@@ -37,4 +38,11 @@ public interface ArticleService {
      * @return
      */
     Result findArticleById(Long articleId);
+
+    /**
+     * 文章发布服务
+     * @param articleParams
+     * @return
+     */
+    Result publish(ArticleParams articleParams);
 }
