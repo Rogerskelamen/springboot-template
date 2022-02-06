@@ -9,7 +9,7 @@ public class Article {
 
     private Long id;
 
-    private Integer commentCounts = Article_Common;
+    private Integer commentCounts;
 
     /**
      * 创建时间
@@ -20,17 +20,17 @@ public class Article {
 
     private String title;
 
-    private Integer viewCounts = Article_Common;
+    private Integer viewCounts;
 
     /**
-     * 置顶
+     * 置顶, 权重越高越置顶
      */
-    private Integer weight = Article_Common;
+    private Integer weight;
 
     private Long authorId;
 
     private Long bodyId;
 
-    private Integer categoryId;
+    private Long categoryId;
 
 }

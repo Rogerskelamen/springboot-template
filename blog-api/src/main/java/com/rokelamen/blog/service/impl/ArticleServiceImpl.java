@@ -3,11 +3,12 @@ package com.rokelamen.blog.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rokelamen.blog.dos.Archives;
+import com.rokelamen.blog.mapper.ArticleBodyMapper;
 import com.rokelamen.blog.mapper.ArticleMapper;
 import com.rokelamen.blog.pojo.Article;
-import com.rokelamen.blog.service.ArticleService;
-import com.rokelamen.blog.service.SysUserService;
-import com.rokelamen.blog.service.TagService;
+import com.rokelamen.blog.pojo.ArticleBody;
+import com.rokelamen.blog.service.*;
+import com.rokelamen.blog.vo.ArticleBodyVo;
 import com.rokelamen.blog.vo.ArticleVo;
 import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.params.PageParams;
@@ -29,6 +30,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Autowired
     private SysUserService sysUserService;
+
+    @Autowired
+    private CategoryService categoryService;
 
     @Override
     public Result listArticle(PageParams pageParams) {
@@ -75,17 +79,48 @@ public class ArticleServiceImpl implements ArticleService {
         return Result.success(archives);
     }
 
+    @Autowired
+    private ThreadService threadService;
+
+    @Override
+    public Result findArticleById(Long articleId) {
+        /**
+         * 1. 根据id查询信息
+         * 2. 根据 bodyId和 categoryid 去做关联查询
+         */
+        Article article = articleMapper.selectById(articleId);
+        ArticleVo articleVo = copy(article, true, true, true, true);
+
+        // 查看完文章，新增阅读数，有没有问题呢？
+        // 查看完文章之后，本应该直接返回数据了，
+        // 这时候做了一个更新操作，更新时加写锁，阻塞其他的读操作，性能就会比较低
+        // 更新增加了此次接口的耗时
+        // 如果一旦更新出问题，不能影响查看文章的操作
+        // 线程池 可以把更新操作扔到线程池中去执行，和主线程就不相关了
+        threadService.updateArticleViewCount(article);
+        return Result.success(articleVo);
+    }
+
     // 将集合类型的article转化为集合类型的articleVo
     private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor) {
         List<ArticleVo> articleVoList = new ArrayList<>();
         for (Article article :
                 records) {
-            articleVoList.add(copy(article, isTag, isAuthor));
+            articleVoList.add(copy(article, isTag, isAuthor, false, false));
         }
         return articleVoList;
     }
 
-    private ArticleVo copy(Article article, boolean isTag, boolean isAuthor) {
+    private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
+        List<ArticleVo> articleVoList = new ArrayList<>();
+        for (Article article :
+                records) {
+            articleVoList.add(copy(article, isTag, isAuthor, isBody, isCategory));
+        }
+        return articleVoList;
+    }
+
+    private ArticleVo copy(Article article, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
         ArticleVo articleVo = new ArticleVo();
         BeanUtils.copyProperties(article, articleVo);
 
@@ -98,6 +133,24 @@ public class ArticleServiceImpl implements ArticleService {
             Long authorId = article.getAuthorId();
             articleVo.setAuthor(sysUserService.findUserById(authorId).getNickname());
         }
+        if (isBody) {
+            Long bodyId = article.getBodyId();
+            articleVo.setBody(findArticleBodyById(bodyId));
+        }
+        if (isCategory) {
+            Long categoryId = article.getCategoryId();
+            articleVo.setCategory(categoryService.findCategoryById(categoryId));
+        }
         return articleVo;
+    }
+
+    @Autowired
+    private ArticleBodyMapper articleBodyMapper;
+
+    private ArticleBodyVo findArticleBodyById(Long bodyId) {
+        ArticleBody articleBody = articleBodyMapper.selectById(bodyId);
+        ArticleBodyVo articleBodyVo = new ArticleBodyVo();
+        articleBodyVo.setContent(articleBody.getContent());
+        return articleBodyVo;
     }
 }
