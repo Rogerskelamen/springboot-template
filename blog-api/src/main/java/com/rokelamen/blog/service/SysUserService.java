@@ -2,8 +2,17 @@ package com.rokelamen.blog.service;
 
 import com.rokelamen.blog.pojo.SysUser;
 import com.rokelamen.blog.vo.Result;
+import com.rokelamen.blog.vo.UserVo;
 
 public interface SysUserService {
+
+    /**
+     * 根据
+     * @param id
+     * @return
+     */
+    UserVo findUserVoById(Long id);
+
     /**
      * 通过id查询User(Author)
      * @param id 用户id

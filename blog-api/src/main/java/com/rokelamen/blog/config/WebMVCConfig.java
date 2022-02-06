@@ -20,7 +20,7 @@ public class WebMVCConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //
+        // 拦截器目标路径
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/test");
     }

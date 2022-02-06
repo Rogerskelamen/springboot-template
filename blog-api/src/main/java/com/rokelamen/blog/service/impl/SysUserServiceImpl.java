@@ -8,6 +8,9 @@ import com.rokelamen.blog.service.TokenService;
 import com.rokelamen.blog.vo.ErrorCode;
 import com.rokelamen.blog.vo.LoginUserVo;
 import com.rokelamen.blog.vo.Result;
+import com.rokelamen.blog.vo.UserVo;
+import org.apache.catalina.User;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +23,25 @@ public class SysUserServiceImpl implements SysUserService {
     private TokenService tokenService;
 
     @Override
+    public UserVo findUserVoById(Long id) {
+        SysUser user = sysUserMapper.selectById(id);
+        if (user == null) {
+            user = new SysUser();
+            user.setId(1L);
+            user.setAvatar("");
+            user.setNickname("账号已注销");
+        }
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        return userVo;
+    }
+
+    @Override
     public SysUser findUserById(Long id) {
         SysUser user = sysUserMapper.selectById(id);
         if (user == null) {
             user = new SysUser();
-            user.setNickname("佚名");
+            user.setNickname("账号已注销");
         }
         return user;
     }
