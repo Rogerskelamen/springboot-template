@@ -1,5 +1,6 @@
 package com.rokelamen.blog.controller;
 
+import com.rokelamen.blog.common.aop.LogAnnotation;
 import com.rokelamen.blog.service.ArticleService;
 import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.params.ArticleParams;
@@ -20,6 +21,8 @@ public class ArticleController {
      * @return Result对象来判断是否传入成功
      */
     @PostMapping
+    // 加上此注解，代表要对此接口记录日志
+    @LogAnnotation(module="文章", operation="获取文章列表")
     public Result listArticle(@RequestBody PageParams pageParams) {
         return articleService.listArticle(pageParams);
     }
