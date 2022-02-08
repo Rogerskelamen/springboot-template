@@ -24,4 +24,14 @@ public class TagController {
     public Result getTags() {
         return tagService.findAll();
     }
+
+    @GetMapping("/detail")
+    public Result getTagsDetail() {
+        return tagService.findAllDetail();
+    }
+
+    @GetMapping("/detail/{id}")
+    public Result getTagsDetailById(@PathVariable("id") Long id) {
+        return tagService.getTagsDetailById(id);
+    }
 }
