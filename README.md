@@ -1207,8 +1207,8 @@ public class ThreadService {
 // 加上此注解，代表要对此接口记录日志
 @LogAnnotation(module="文章", operate="获取文章列表")
 public Result listArticle(@RequestBody PageParams pageParams) {
-    return articleService.listArticle(pageParams);
-}
+        return articleService.listArticle(pageParams);
+        }
 ```
 
 1. 创建包`common.aop`并编写注解`LogAnnotation.java`:
@@ -1401,7 +1401,7 @@ public class IpUtils {
     <groupId>com.qiniu</groupId>
     <artifactId>qiniu-java-sdk</artifactId>
     <version>[7.7.0, 7.7.99]</version>
-  </dependency>
+</dependency>
   ```
 
 2. 编写工具类`QiniuUtils.java`:
@@ -1409,80 +1409,80 @@ public class IpUtils {
   ```java
   package com.rokelamen.blog.utils;
 
-  import com.alibaba.fastjson.JSON;
-  import com.qiniu.http.Response;
-  import com.qiniu.storage.Configuration;
-  import com.qiniu.storage.Region;
-  import com.qiniu.storage.UploadManager;
-  import com.qiniu.storage.model.DefaultPutRet;
-  import com.qiniu.util.Auth;
-  import org.springframework.beans.factory.annotation.Value;
-  import org.springframework.stereotype.Component;
-  import org.springframework.web.multipart.MultipartFile;
+import com.alibaba.fastjson.JSON;
+import com.qiniu.http.Response;
+import com.qiniu.storage.Configuration;
+import com.qiniu.storage.Region;
+import com.qiniu.storage.UploadManager;
+import com.qiniu.storage.model.DefaultPutRet;
+import com.qiniu.util.Auth;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-  @Component
-  public class QiniuUtils {
+@Component
+public class QiniuUtils {
 
-      public static final String url = "r6xa76ri6.hd-bkt.clouddn.com";
+    public static final String url = "r6xa76ri6.hd-bkt.clouddn.com";
 
-      @Value("${qiniu.accessKey}")
-      private String accessKey;
-      @Value("${qiniu.accessSecretKey}")
-      private String accessSecretKey;
+    @Value("${qiniu.accessKey}")
+    private String accessKey;
+    @Value("${qiniu.accessSecretKey}")
+    private String accessSecretKey;
 
-      public boolean upload(MultipartFile file,String fileName){
+    public boolean upload(MultipartFile file,String fileName){
 
-          //构造一个带指定 Region 对象的配置类
-          com.qiniu.storage.Configuration cfg = new Configuration(Region.region0());
-          //...其他参数参考类注释
-          UploadManager uploadManager = new UploadManager(cfg);
-          //...生成上传凭证，然后准备上传
-          String bucket = "rok";
-          //默认不指定key的情况下，以文件内容的hash值作为文件名
-          try {
-              byte[] uploadBytes = file.getBytes();
-              Auth auth = Auth.create(accessKey, accessSecretKey);
-              String upToken = auth.uploadToken(bucket);
-              Response response = uploadManager.put(uploadBytes, fileName, upToken);
-              //解析上传成功的结果
-              DefaultPutRet putRet = JSON.parseObject(response.bodyString(), DefaultPutRet.class);
-              return true;
-          } catch (Exception ex) {
-              ex.printStackTrace();
-          }
-          return false;
-      }
+        //构造一个带指定 Region 对象的配置类
+        com.qiniu.storage.Configuration cfg = new Configuration(Region.region0());
+        //...其他参数参考类注释
+        UploadManager uploadManager = new UploadManager(cfg);
+        //...生成上传凭证，然后准备上传
+        String bucket = "rok";
+        //默认不指定key的情况下，以文件内容的hash值作为文件名
+        try {
+            byte[] uploadBytes = file.getBytes();
+            Auth auth = Auth.create(accessKey, accessSecretKey);
+            String upToken = auth.uploadToken(bucket);
+            Response response = uploadManager.put(uploadBytes, fileName, upToken);
+            //解析上传成功的结果
+            DefaultPutRet putRet = JSON.parseObject(response.bodyString(), DefaultPutRet.class);
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
 
-  }
+}
   ```
 
 3. 引入到Controller中：
 
   ```java
   @RestController
-  @RequestMapping("upload")
-  public class UploadController {
+@RequestMapping("upload")
+public class UploadController {
 
-      @Autowired
-      private QiniuUtils qiniuUtils;
+    @Autowired
+    private QiniuUtils qiniuUtils;
 
-      @PostMapping
-      @LogAnnotation(module = "上传图片", operation = "图片上传")
-      public Result upload(@RequestParam("image")MultipartFile file) {
-          // 原始文件名称 比如 aa.png
-          String originalFileName = file.getOriginalFilename();
-          // 唯一的文件名称(肯定不能用原始文件名)
-          String fileName = UUID.randomUUID().toString() + "." + StringUtils.substringAfterLast(originalFileName, ".");
-          // 上传文件 上传到哪呢？ 七牛云
+    @PostMapping
+    @LogAnnotation(module = "上传图片", operation = "图片上传")
+    public Result upload(@RequestParam("image")MultipartFile file) {
+        // 原始文件名称 比如 aa.png
+        String originalFileName = file.getOriginalFilename();
+        // 唯一的文件名称(肯定不能用原始文件名)
+        String fileName = UUID.randomUUID().toString() + "." + StringUtils.substringAfterLast(originalFileName, ".");
+        // 上传文件 上传到哪呢？ 七牛云
 
-          boolean upload = qiniuUtils.upload(file, fileName);
-          if (upload) {
-              return Result.success(QiniuUtils.url + fileName);
-          }else {
-              return Result.fail(20001, "上传失败");
-          }
-      }
-  }
+        boolean upload = qiniuUtils.upload(file, fileName);
+        if (upload) {
+            return Result.success(QiniuUtils.url + fileName);
+        }else {
+            return Result.fail(20001, "上传失败");
+        }
+    }
+}
   ```
 
 4. 设置最大的文件上传大小：
@@ -1490,9 +1490,9 @@ public class IpUtils {
 
   ```properties
   # 上传图片总的最大值
-  spring.servlet.multipart.max-request-size=20MB
-  # 单个文件最大值
-  spring.servlet.multipart.max-file-size=2MB
+spring.servlet.multipart.max-request-size=20MB
+# 单个文件最大值
+spring.servlet.multipart.max-file-size=2MB
   ```
 
 <u>需要注意的是，这个上传服务就不能用AOP日志注解了，因为在上传的过程中，会有复杂的类型转换，其中的JSON转换会提示报错（但是不影响成功上传）</u>
@@ -1523,6 +1523,129 @@ methods: {
 </script>
 ```
 
+# Swagger
+
+## 导入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter -->
+<dependency>
+    <groupId>io.springfox</groupId>
+    <artifactId>springfox-boot-starter</artifactId>
+    <version>3.0.0</version>
+</dependency>
+```
+
+## 配置swagger
+
+1. 配置swagger
+
+  ```java
+  package com.rokelamen.blog.config;
+
+  import org.springframework.context.annotation.Configuration;
+  import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+  @Configuration
+  @EnableSwagger2     // 开启swagger2
+  public class SwaggerConfig {
+  }
+  ```
+
+2. 启动类上开启swagger
+
+  ```java
+  // 加上EnableWebMvc注解
+  @EnableWebMvc
+  ```
+
+## 访问
+
+访问http://localhost:8888/swagger-ui/index.html
+
+## 配置swagger
+
+```java
+package com.rokelamen.blog.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+@Configuration
+@EnableSwagger2     // 开启swagger2
+public class SwaggerConfig {
+
+    // 配置Swagger的Docket的bean实例
+    @Bean
+    public Docket docket() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+                // 指定要扫描的包
+                // basePackage: 指定要扫描的包
+                // any ： 扫描全部
+                // none : 不扫描
+                // withClassAnnotation: 扫描类上的注解
+                // withMethodAnnotation: 扫描方法上的注解
+                .apis(RequestHandlerSelectors.basePackage("com.rokelamen.blog.controller"))
+                // path: 过滤什么路径
+                // .paths(PathSelectors.ant("/article/**"))
+                .build()
+                .groupName("rokelamen");
+    }
+}
+```
+
+## 增加注释
+
+在实体类上加上: `@ApiModel`等
+
+```java
+@Data
+@ApiModel("目录")
+public class CategoryVo {
+
+    @ApiModelProperty("主键")
+    private Long id;
+
+    private String avatar;
+
+    private String categoryName;
+
+    private String description;
+}
+```
+
+在控制器上使用`@Api(tags)`和`@ApiOperation`:
+
+```java
+@RestController
+@RequestMapping("/articles")
+@Api(tags = "文章相关接口")
+public class ArticleController {
+    @Autowired
+    private ArticleService articleService;
+
+    /**
+     * 首页文章列表
+     * @param pageParams
+     * @return Result对象来判断是否传入成功
+     */
+    @PostMapping
+    // 加上此注解，代表要对此接口记录日志
+    @LogAnnotation(module="文章", operation="获取文章列表")
+    @Cache(expire = 5 * 60 * 1000, name = "listArticle")
+    @ApiOperation("获取文章列表")
+    public Result listArticle(@RequestBody PageParams pageParams) {
+        return articleService.listArticle(pageParams);
+    }
+}
+```
+
 # 统一缓存处理（AOP方式）
 
 > 原因：内存的访问速度远远大于磁盘中数据库的访问速度
@@ -1532,87 +1655,87 @@ methods: {
   ```java
   package com.rokelamen.blog.common.cache;
 
-  import java.lang.annotation.*;
+import java.lang.annotation.*;
 
-  @Target({ElementType.METHOD})
-  @Retention(RetentionPolicy.RUNTIME)
-  @Documented
-  public @interface Cache {
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Cache {
 
-      // 数据在缓存中存活的时间
-      long expire() default 1 * 60 * 1000;
+    // 数据在缓存中存活的时间
+    long expire() default 1 * 60 * 1000;
 
-      String name() default "";
-  }
+    String name() default "";
+}
   ```
 
 2. 使用AOP切面：
 
   ```java
   @Aspect
-  @Component
-  @Slf4j
-  public class CacheAspect {
+@Component
+@Slf4j
+public class CacheAspect {
 
-      @Autowired
-      private RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
-      @Pointcut("@annotation(com.rokelamen.blog.common.cache.Cache)")
-      public void pt() {}
+    @Pointcut("@annotation(com.rokelamen.blog.common.cache.Cache)")
+    public void pt() {}
 
-      @Around("pt()")
-      public Object around(ProceedingJoinPoint pjp) {
-          try {
-              Signature signature = pjp.getSignature();
-              // 类名
-              String className = pjp.getTarget().getClass().getSimpleName();
-              // 调用方法名
-              String methodName = signature.getName();
+    @Around("pt()")
+    public Object around(ProceedingJoinPoint pjp) {
+        try {
+            Signature signature = pjp.getSignature();
+            // 类名
+            String className = pjp.getTarget().getClass().getSimpleName();
+            // 调用方法名
+            String methodName = signature.getName();
 
-              Class[] paramterTypes = new Class[pjp.getArgs().length];
+            Class[] paramterTypes = new Class[pjp.getArgs().length];
 
-              Object[] args = pjp.getArgs();
+            Object[] args = pjp.getArgs();
 
-              // 参数
-              String params = "";
-              for (int i = 0; i < args.length; i++) {
-                  if (args[i] != null) {
-                      params += JSON.toJSONString(args[i]);
-                      paramterTypes[i] = args[i].getClass();
-                  }else {
-                      paramterTypes[i] = null;
-                  }
-              }
+            // 参数
+            String params = "";
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] != null) {
+                    params += JSON.toJSONString(args[i]);
+                    paramterTypes[i] = args[i].getClass();
+                }else {
+                    paramterTypes[i] = null;
+                }
+            }
 
-              if (StringUtils.isNotEmpty(params)) {
-                  // 加密 以防出现key过长以及字符转义获取不到的情况
-                  params = DigestUtils.md5Hex(params);
-              }
-              Method method = pjp.getSignature().getDeclaringType().getMethod(methodName, paramterTypes);
-              // 获取Cache注解
-              Cache annotation = method.getAnnotation(Cache.class);
-              // 缓存过期时间
-              long expire = annotation.expire();
-              // 缓存名称
-              String name = annotation.name();
+            if (StringUtils.isNotEmpty(params)) {
+                // 加密 以防出现key过长以及字符转义获取不到的情况
+                params = DigestUtils.md5Hex(params);
+            }
+            Method method = pjp.getSignature().getDeclaringType().getMethod(methodName, paramterTypes);
+            // 获取Cache注解
+            Cache annotation = method.getAnnotation(Cache.class);
+            // 缓存过期时间
+            long expire = annotation.expire();
+            // 缓存名称
+            String name = annotation.name();
 
-              // 先从redis获取
-              String redisKey = name + "::" + className + "::" + methodName + "::" + params;
-              String redisValue = redisTemplate.opsForValue().get(redisKey);
-              if (StringUtils.isNotEmpty(redisValue)) {
-                  log.info("走了缓存~~~, {}, {}", className, methodName);
-                  return JSON.parseObject(redisValue, Result.class);
-              }
-              Object proceed = pjp.proceed();
-              redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(proceed), Duration.ofMillis(expire));
-              log.info("存入缓存~~~, {}, {}", className, methodName);
-              return proceed;
-          } catch (Throwable throwable) {
-              throwable.printStackTrace();
-          }
-          return Result.fail(-999, "系统错误");
-      }
-  }
+            // 先从redis获取
+            String redisKey = name + "::" + className + "::" + methodName + "::" + params;
+            String redisValue = redisTemplate.opsForValue().get(redisKey);
+            if (StringUtils.isNotEmpty(redisValue)) {
+                log.info("走了缓存~~~, {}, {}", className, methodName);
+                return JSON.parseObject(redisValue, Result.class);
+            }
+            Object proceed = pjp.proceed();
+            redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(proceed), Duration.ofMillis(expire));
+            log.info("存入缓存~~~, {}, {}", className, methodName);
+            return proceed;
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return Result.fail(-999, "系统错误");
+    }
+}
   ```
 
 # 杂项(记录问题)
@@ -1634,10 +1757,10 @@ methods: {
 
     <!-- List<Tag> findTagsByArticleId(Long articleId);-->
     <select id="findTagsByArticleId" parameterType="long" resultType="com.rokelamen.blog.pojo.Tag">
---         select id, avatar, tag_name as tagName
---         from ms_tag
---         where id in
---         (select tag_id from ms_article_tag where article_id=#{articleId})
+        --         select id, avatar, tag_name as tagName
+        --         from ms_tag
+        --         where id in
+        --         (select tag_id from ms_article_tag where article_id=#{articleId})
         select ms_tag.id, avatar, tag_name as tagName
         from ms_tag inner join ms_article_tag mat on ms_tag.id = mat.tag_id and mat.article_id = #{articleId};
     </select>
