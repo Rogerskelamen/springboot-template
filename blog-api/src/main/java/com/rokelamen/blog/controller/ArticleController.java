@@ -6,12 +6,15 @@ import com.rokelamen.blog.service.ArticleService;
 import com.rokelamen.blog.vo.Result;
 import com.rokelamen.blog.vo.params.ArticleParams;
 import com.rokelamen.blog.vo.params.PageParams;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 // 使用json格式进行交互
 @RestController
 @RequestMapping("/articles")
+@Api(tags = "文章相关接口")
 public class ArticleController {
     @Autowired
     private ArticleService articleService;
@@ -25,6 +28,7 @@ public class ArticleController {
     // 加上此注解，代表要对此接口记录日志
     @LogAnnotation(module="文章", operation="获取文章列表")
     @Cache(expire = 5 * 60 * 1000, name = "listArticle")
+    @ApiOperation("获取文章列表")
     public Result listArticle(@RequestBody PageParams pageParams) {
         return articleService.listArticle(pageParams);
     }
